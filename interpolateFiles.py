@@ -89,7 +89,7 @@ def getAveragePSNRSSIM(binsX, binsMapIndex):
 
 	# Delete the bins that were not found
 	binsX = [elem for index, elem in enumerate(binsX) if index not in deletedIndices]
-	return binsX, YSSIM, YPSNR
+	return binsX, YSSIM, YPSNR, deletedIndices
 
 #### Main: 
 
@@ -138,11 +138,7 @@ binsX = createXBins(minsBpp, maxsBpp, 0.05)
 binsMapIndex = createBinsMapIndex(bppAll, binsX)
 
 # Average curves
-YSSIM = []
-YPSNR = []
-deletedIndices = []
-
-binsX, YSSIM, YPSNR = getAveragePSNRSSIM(binsX, binsMapIndex)
+binsX, YSSIM, YPSNR, deletedIndices = getAveragePSNRSSIM(binsX, binsMapIndex)
 # print(binsX)
 # print(len(YSSIM))
 # print(YPSNR)
