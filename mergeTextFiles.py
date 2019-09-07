@@ -72,7 +72,7 @@ for imgID in range(start, end):
 		#print('Remove: ', current_image)
 		#print('Write', desired_image)
 	
-	if  original_img_ID % 1000:
+	if not original_img_ID % 1000:
 		print('Aggregate done with %s images.' % imgID)
 	
 
