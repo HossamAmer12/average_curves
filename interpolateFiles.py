@@ -11,6 +11,7 @@ path_to_txt_files='/Users/hossam.amer/7aS7aS_Works/work/workspace/TESTS/hevc_int
 start = 1
 # end = 1100
 end = 5000
+# end = 100
 
 
 import math
@@ -46,9 +47,18 @@ def createXBins(minsBpp, maxsBpp, stepSize=0.05):
 	
 	return binsX
 
-def createBinsMapIndex(bppAll, binsX):
+def createBinsMapIndex(bppAll, binsX, psnrAll, mssimAll, nBins = 200):
 	# Initialize binsMap to all zeros (must be all zeros)
 	binsMap = [0] * len(bppAll)
+
+	# Initialize the sum arrays
+	sumPSNR  = [0] * nBins
+	sumMSSIM = [0] * nBins
+
+	# Initilize len arrays:
+	lenPSNR  = [0] * nBins
+	lenMSSIM = [0] * nBins
+
 	# Create a bins map
 	for i in range(len(bppAll)):
 		x = bppAll[i]
@@ -58,40 +68,58 @@ def createBinsMapIndex(bppAll, binsX):
 			if(x >= binsX[1]):
 				try:
 					binsMap[i] = binsX.index(round(x, 1))
+					sumPSNR[binsMap[i]]   = sumPSNR[binsMap[i]]  + psnrAll[i]
+					sumMSSIM[binsMap[i]]  = sumMSSIM[binsMap[i]] + mssimAll[i]
+					lenPSNR[binsMap[i]]   = 1 + lenPSNR[binsMap[i]]
+					lenMSSIM[binsMap[i]]  = 1 + lenMSSIM[binsMap[i]]
+
 				except ValueError:
 					binsMap[i] = -1 # ignore this one in the calculations
-	return binsMap
+			else:
+				sumPSNR[0]   = sumPSNR[0]  + psnrAll[i]
+				sumMSSIM[0]  = sumMSSIM[0] + mssimAll[i]
+				lenPSNR[0]   = 1 + lenPSNR[0]
+				lenMSSIM[0]  = 1 + lenMSSIM[0]
 
-def getAveragePSNRSSIM(binsX, binsMapIndex, bppAll):
+	return binsMap, sumPSNR, sumMSSIM, lenPSNR, lenMSSIM
+
+def getAveragePSNRSSIM(binsX, binsMapIndex, bppAll, sumPSNR, sumMSSIM, lenPSNR, lenMSSIM):
 	YSSIM = []
 	YPSNR = []
 	deletedIndices = []
+
 
 	# compute the average curve for each bin
 	for i in range(len(binsX)):
 		# print('Iteration: %d' % i)
 		# find all occurances of the current bin
-		indexOcurrances = [j for j, value in enumerate(binsMapIndex) if value == i]
-		numOccurances = len(indexOcurrances) # this is correct
+
+		assert(lenPSNR[i] == lenMSSIM[i]) # they have to be the same
+		numOccurances = lenPSNR[i] # this is correct or lenSSIM[i], should be the same
 
 		# only consider if index occurances are not empty (won't interpolate)
-		if indexOcurrances:
+		if numOccurances:
 			# Compute Average PSNR
-			sumPSNR = sum(val for index, val in enumerate(psnrAll) if index in indexOcurrances)
-			avgPSNR = 1.0*sumPSNR/numOccurances
+			sumPSNR_val = sumPSNR[i]
+			avgPSNR_val = 1.0*sumPSNR_val/numOccurances
+
+			# print(sumPSNR == sumPSNR[i])
+			# print(sumPSNR_val, indexOcurrances)
 
 			# append to PSNR
-			YPSNR.append(avgPSNR)
+			YPSNR.append(avgPSNR_val)
 
 			# Compute Average MSSIM
-			sumMSSIM = sum(val for index, val in enumerate(mssimAll) if index in indexOcurrances)
-			avgSSIM = 1.0*sumMSSIM/numOccurances
+			sumMSSIM_val = sumMSSIM[i]
+			avgSSIM_val = 1.0*sumMSSIM_val/numOccurances
+
+
+			# print(avgSSIM_val == 1.0*sumMSSIM[i]/lenMSSIM[i])
 
 			# append to MSSIM
-			YSSIM.append(avgSSIM)
+			YSSIM.append(avgSSIM_val)
 		else:
 			deletedIndices.append(i)
-
 
 	# 	if i == 16:
 	# 		print(len(binsX))
@@ -169,12 +197,12 @@ print('createXBins Done')
 # print(len(binsX)) # 98
 
 # Create a binsMap to map each value in the data into a specific bin index
-binsMapIndex = createBinsMapIndex(bppAll, binsX)
+binsMapIndex, sumPSNR, sumMSSIM, lenPSNR, lenMSSIM = createBinsMapIndex(bppAll, binsX, psnrAll, mssimAll)
 
 print('createBinsMapIndex Done')
 
 # Average curves
-binsX, YSSIM, YPSNR, deletedIndices = getAveragePSNRSSIM(binsX, binsMapIndex, bppAll)
+binsX, YSSIM, YPSNR, deletedIndices = getAveragePSNRSSIM(binsX, binsMapIndex, bppAll, sumPSNR, sumMSSIM, lenPSNR, lenMSSIM)
 
 print('getAveragePSNRSSIM Done')
 # print(binsX)
