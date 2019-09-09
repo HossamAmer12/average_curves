@@ -7,13 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # start image
-start = 1
+start = 1001
 # end image
-end = 11
+end = 1 + 11000
 
 
-path_to_txt_files ='Gen/Seq-Stats/'
-path_out_txt_files = 'Gen/Seq-Stats-Unified/'
+path_to_txt_files ='/Users/hossam.amer/7aS7aS_Works/work/workspace/TESTS/hevc_intraML_bits/bin/Build/Products/Release/Gen/Seq-Stats/'
+path_out_txt_files = '/Users/hossam.amer/7aS7aS_Works/work/workspace/TESTS/hevc_intraML_bits/bin/Build/Products/Release/Gen/Seq-Stats-Unified/'
 
 def readFileContents(image):
 	f = open(image, "r")	
@@ -72,10 +72,10 @@ for imgID in range(start, end):
 		#print('Remove: ', current_image)
 		#print('Write', desired_image)
 	
-	if not original_img_ID % 1000:
+	if not original_img_ID % 50:
 		print('Aggregate done with %s images.' % imgID)
 	
-
+print('Done!')
 
 
 	

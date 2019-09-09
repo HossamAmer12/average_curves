@@ -3,10 +3,14 @@
 # Run using this way: python3 interpolateFiles.py
 
 
-path_to_txt_files ='Gen/Seq-Stats/'
+# path_to_txt_files ='Gen/Seq-Stats/'
+
+# unified files
+path_to_txt_files='/Users/hossam.amer/7aS7aS_Works/work/workspace/TESTS/hevc_intraML_bits/bin/Build/Products/Release/Gen/Seq-Stats-Unified/'
 
 start = 1
-end = 11
+# end = 1100
+end = 5000
 
 
 import math
@@ -58,16 +62,17 @@ def createBinsMapIndex(bppAll, binsX):
 					binsMap[i] = -1 # ignore this one in the calculations
 	return binsMap
 
-def getAveragePSNRSSIM(binsX, binsMapIndex):
+def getAveragePSNRSSIM(binsX, binsMapIndex, bppAll):
 	YSSIM = []
 	YPSNR = []
 	deletedIndices = []
 
 	# compute the average curve for each bin
 	for i in range(len(binsX)):
+		# print('Iteration: %d' % i)
 		# find all occurances of the current bin
 		indexOcurrances = [j for j, value in enumerate(binsMapIndex) if value == i]
-		numOccurances = len(indexOcurrances)
+		numOccurances = len(indexOcurrances) # this is correct
 
 		# only consider if index occurances are not empty (won't interpolate)
 		if indexOcurrances:
@@ -87,6 +92,27 @@ def getAveragePSNRSSIM(binsX, binsMapIndex):
 		else:
 			deletedIndices.append(i)
 
+
+	# 	if i == 16:
+	# 		print(len(binsX))
+	# 		print('Length: ', len(YSSIM))
+	# 		for ii in range(len(binsX)):
+	# 			indexOcurrances = [j for j, value in enumerate(binsMapIndex) if value == ii]
+	# 			numOccurances = len(indexOcurrances)
+	# 			print(ii, ') Source: ')
+	# 			sumVal = 0
+	# 			for index, val in enumerate(mssimAll):					
+	# 				if index in indexOcurrances:
+	# 					sumVal = sumVal + val
+	# 					print(bppAll[index], val)
+
+	# 			if not numOccurances:
+	# 				print('Number of occurances is 0 in ', ii)
+	# 			else:
+	# 				print(ii, ') Source bin %f and Corresponding SSIM %f' % (binsX[ii], YSSIM[ii]))
+	# 		break
+
+	# exit(0)
 	# Delete the bins that were not found
 	binsX = [elem for index, elem in enumerate(binsX) if index not in deletedIndices]
 	return binsX, YSSIM, YPSNR, deletedIndices
@@ -126,22 +152,39 @@ for imgID in range(start, end):
 	mssimAll.extend(msssim)
 	psnrAll.extend(psnr)
 
+	if not original_img_ID % 50:
+		print('Collecting info done with %s images.' % imgID)
+
 # print(bppAll)
+
+print('Collecting info is Done')
 
 # Define your bins for bits per pixel
 binsX = []
 binsY = []
 binsX = createXBins(minsBpp, maxsBpp, 0.05)
+
+print('createXBins Done')
+
 # print(len(binsX)) # 98
 
 # Create a binsMap to map each value in the data into a specific bin index
 binsMapIndex = createBinsMapIndex(bppAll, binsX)
 
+print('createBinsMapIndex Done')
+
 # Average curves
-binsX, YSSIM, YPSNR, deletedIndices = getAveragePSNRSSIM(binsX, binsMapIndex)
+binsX, YSSIM, YPSNR, deletedIndices = getAveragePSNRSSIM(binsX, binsMapIndex, bppAll)
+
+print('getAveragePSNRSSIM Done')
 # print(binsX)
 # print(len(YSSIM))
 # print(YPSNR)
+
+
+# fig = plt.figure()
+# plt.hist(bppAll, bins = len(binsX))
+# plt.hist(bppAll, bins = )
 
 
 fig = plt.figure()
